@@ -26,6 +26,7 @@ from src.middleware.vehicle_manager import VehicleManager
 
 # --- HMI (Camada de Interface) ---
 from src.hmi.display import (
+    C,
     clear_screen,
     render_alerts,
     render_boot_progress,
@@ -43,11 +44,11 @@ from src.hmi.display import (
 )
 from src.hmi.input_handler import InputHandler
 
-# Configuração de logging
+# Configuração de logging — somente arquivo (sem poluir o terminal)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler("infotainment.log"), logging.StreamHandler(sys.stderr)],
+    handlers=[logging.FileHandler("infotainment.log")],
 )
 logger = logging.getLogger(__name__)
 
@@ -82,10 +83,24 @@ class InfotainmentSystem:
     def boot(self) -> bool:
         """Executa a sequência de inicialização do sistema."""
         clear_screen()
-        print(self._boot.show_welcome())
-        time.sleep(1)
 
-        print("\n  Inicializando subsistemas...\n")
+        # Logo animada
+        boot_art = (
+            f"\n"
+            f"  {C.BRIGHT_CYAN}{C.BOLD}"
+            f"     ╔══════════════════════════════════════════╗\n"
+            f"  {C.BRIGHT_CYAN}"
+            f"     ║    CENTRAL MULTIMÍDIA AUTOMOTIVA        ║\n"
+            f"  {C.CYAN}"
+            f"     ║           Infotainment v1.0             ║\n"
+            f"  {C.CYAN}"
+            f"     ╚══════════════════════════════════════════╝{C.RESET}\n"
+        )
+        print(boot_art)
+        time.sleep(0.8)
+
+        print(f"  {C.DIM}{'─' * 50}{C.RESET}")
+        print(f"  {C.BRIGHT_WHITE}{C.BOLD} Inicializando subsistemas...{C.RESET}\n")
         report = self._boot.run_boot_sequence()
 
         for name, status in report.subsystems.items():
@@ -93,12 +108,13 @@ class InfotainmentSystem:
             print(line)
             time.sleep(0.3)
 
-        print(f"\n  Tempo de boot: {report.boot_time_seconds:.3f}s")
+        print(f"\n  {C.DIM}{'─' * 50}{C.RESET}")
+        print(f"  {C.BRIGHT_GREEN}✓ Boot completo em {report.boot_time_seconds:.3f}s{C.RESET}")
 
         if not report.all_ok:
-            print("\n  ⚠ Alguns subsistemas falharam. O sistema pode não funcionar corretamente.")
+            print(f"\n  {C.BRIGHT_YELLOW}⚠ Alguns subsistemas falharam.{C.RESET}")
 
-        print("\n  Pressione ENTER para continuar...")
+        print(f"\n  {C.DIM}Pressione ENTER para continuar...{C.RESET}")
         try:
             input()
         except (EOFError, KeyboardInterrupt):
@@ -247,7 +263,7 @@ class InfotainmentSystem:
                 self._pair_bluetooth()
             elif choice == "3":
                 self._connectivity.disconnect_bluetooth()
-                print("  Bluetooth desconectado.")
+                print(f"  {C.BRIGHT_GREEN}✓ Bluetooth desconectado.{C.RESET}")
                 time.sleep(1)
             elif choice == "4":
                 self._scan_wifi()
@@ -255,12 +271,12 @@ class InfotainmentSystem:
                 self._connect_wifi()
             elif choice == "6":
                 self._connectivity.disconnect_wifi()
-                print("  Wi-Fi desconectado.")
+                print(f"  {C.BRIGHT_GREEN}✓ Wi-Fi desconectado.{C.RESET}")
                 time.sleep(1)
 
     def _scan_bluetooth(self) -> None:
         """Executa escaneamento Bluetooth e exibe resultados."""
-        print("\n  Escaneando dispositivos Bluetooth...")
+        print(f"\n  {C.BRIGHT_CYAN}Escaneando dispositivos Bluetooth...{C.RESET}")
         devices = self._connectivity.scan_bluetooth()
         device_list = [
             {"name": d.name, "detail": d.address}
@@ -271,11 +287,11 @@ class InfotainmentSystem:
 
     def _pair_bluetooth(self) -> None:
         """Fluxo de pareamento Bluetooth."""
-        print("\n  Escaneando dispositivos...")
+        print(f"\n  {C.BRIGHT_CYAN}Escaneando dispositivos...{C.RESET}")
         devices = self._connectivity.scan_bluetooth()
 
         if not devices:
-            print("  Nenhum dispositivo encontrado.")
+            print(f"  {C.DIM}Nenhum dispositivo encontrado.{C.RESET}")
             time.sleep(1)
             return
 
@@ -290,18 +306,18 @@ class InfotainmentSystem:
             return
 
         device = devices[idx - 1]
-        print(f"\n  Pareando com '{device.name}'...")
+        print(f"\n  {C.BRIGHT_CYAN}Pareando com '{device.name}'...{C.RESET}")
         success = self._connectivity.pair_bluetooth(device.address)
 
         if success:
-            print(f"  ✓ Conectado com '{device.name}'!")
+            print(f"  {C.BRIGHT_GREEN}✓ Conectado com '{device.name}'!{C.RESET}")
         else:
-            print(f"  ✗ Falha ao parear com '{device.name}'.")
+            print(f"  {C.BRIGHT_RED}✗ Falha ao parear com '{device.name}'.{C.RESET}")
         time.sleep(1.5)
 
     def _scan_wifi(self) -> None:
         """Executa escaneamento Wi-Fi e exibe resultados."""
-        print("\n  Escaneando redes Wi-Fi...")
+        print(f"\n  {C.BRIGHT_CYAN}Escaneando redes Wi-Fi...{C.RESET}")
         networks = self._connectivity.scan_wifi()
         net_list = [
             {"name": n.ssid, "detail": f"Sinal: {n.signal_strength}% {'🔒' if n.secured else '🔓'}"}
@@ -312,11 +328,11 @@ class InfotainmentSystem:
 
     def _connect_wifi(self) -> None:
         """Fluxo de conexão Wi-Fi."""
-        print("\n  Escaneando redes...")
+        print(f"\n  {C.BRIGHT_CYAN}Escaneando redes...{C.RESET}")
         networks = self._connectivity.scan_wifi()
 
         if not networks:
-            print("  Nenhuma rede encontrada.")
+            print(f"  {C.DIM}Nenhuma rede encontrada.{C.RESET}")
             time.sleep(1)
             return
 
@@ -335,13 +351,13 @@ class InfotainmentSystem:
         if network.secured:
             password = self._input.get_text_input("Senha: ")
 
-        print(f"\n  Conectando à rede '{network.ssid}'...")
+        print(f"\n  {C.BRIGHT_CYAN}Conectando à rede '{network.ssid}'...{C.RESET}")
         success = self._connectivity.connect_wifi(network.ssid, password)
 
         if success:
-            print(f"  ✓ Conectado à rede '{network.ssid}'!")
+            print(f"  {C.BRIGHT_GREEN}✓ Conectado à rede '{network.ssid}'!{C.RESET}")
         else:
-            print(f"  ✗ Falha ao conectar à rede '{network.ssid}'.")
+            print(f"  {C.BRIGHT_RED}✗ Falha ao conectar à rede '{network.ssid}'.{C.RESET}")
         time.sleep(1.5)
 
     # ── Submenu Veículo ──────────────────────────────────────
@@ -370,7 +386,7 @@ class InfotainmentSystem:
     def _shutdown(self) -> None:
         """Desliga o sistema de forma segura."""
         clear_screen()
-        print("\n  Desligando a Central Multimídia...")
+        print(f"\n  {C.BRIGHT_YELLOW}{C.BOLD}Desligando a Central Multimídia...{C.RESET}\n")
 
         subsystems = [
             ("Mídia", self._media.stop),
@@ -382,14 +398,16 @@ class InfotainmentSystem:
         ]
 
         for name, shutdown_fn in subsystems:
-            print(f"  Desligando {name}...")
+            print(f"  {C.DIM}[...]{C.RESET} Desligando {C.WHITE}{name}{C.RESET}...")
             shutdown_fn()
             time.sleep(0.2)
+            # Re-print com check
+            print(f"\033[1A  {C.BRIGHT_GREEN}[✓]{C.RESET}   Desligado  {C.WHITE}{name}{C.RESET}   ")
 
-        print("\n  ╔══════════════════════════════════════════════════════════╗")
-        print("  ║           SISTEMA DESLIGADO COM SEGURANÇA               ║")
-        print("  ║               Até a próxima viagem!                     ║")
-        print("  ╚══════════════════════════════════════════════════════════╝\n")
+        print(f"\n  {C.CYAN}╔══════════════════════════════════════════════════════════╗{C.RESET}")
+        print(f"  {C.CYAN}║{C.BRIGHT_WHITE}{C.BOLD}         SISTEMA DESLIGADO COM SEGURANÇA              {C.RESET}{C.CYAN}║{C.RESET}")
+        print(f"  {C.CYAN}║{C.DIM}              Até a próxima viagem!                    {C.RESET}{C.CYAN}║{C.RESET}")
+        print(f"  {C.CYAN}╚══════════════════════════════════════════════════════════╝{C.RESET}\n")
 
         self._running = False
         logger.info("Sistema de infotainment desligado.")
