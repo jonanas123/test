@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central Multimídia Automotiva</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- ── Status Bar ─────────────────────────────────────── -->
+  <header class="status-bar">
+    <div class="status-left">
+      <span class="status-icon" id="bt-icon">&#9679;</span>
+      <span class="status-icon" id="wifi-icon">&#9679;</span>
+      <span class="signal-text" id="signal-text">---</span>
+    </div>
+    <div class="status-center">
+      <span id="clock">00:00</span>
+    </div>
+    <div class="status-right">
+      <span id="temp-outside">25°C</span>
+      <span class="divider">|</span>
+      <span id="date-display">01/01/2026</span>
+    </div>
+  </header>
+
+  <!-- ── Navigation Tabs ────────────────────────────────── -->
+  <nav class="nav-tabs">
+    <button class="nav-btn active" data-panel="dashboard" onclick="showPanel('dashboard')">
+      <span class="nav-icon">&#9783;</span>Dashboard
+    </button>
+    <button class="nav-btn" data-panel="media" onclick="showPanel('media')">
+      <span class="nav-icon">&#9835;</span>Mídia
+    </button>
+    <button class="nav-btn" data-panel="hvac" onclick="showPanel('hvac')">
+      <span class="nav-icon">&#10052;</span>Clima
+    </button>
+    <button class="nav-btn" data-panel="vehicle" onclick="showPanel('vehicle')">
+      <span class="nav-icon">&#9951;</span>Veículo
+    </button>
+    <button class="nav-btn" data-panel="connectivity" onclick="showPanel('connectivity')">
+      <span class="nav-icon">&#8801;</span>Conexões
+    </button>
+  </nav>
+
+  <!-- ── Main Content ───────────────────────────────────── -->
+  <main class="content">
+
+    <!-- Dashboard Panel -->
+    <section id="panel-dashboard" class="panel active">
+      <div class="dashboard-grid">
+        <!-- Speed / RPM -->
+        <div class="card card-speed">
+          <div class="gauge-container">
+            <svg class="gauge" viewBox="0 0 200 120">
+              <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" />
+              <path class="gauge-fill" id="speed-arc" d="M 20 100 A 80 80 0 0 1 180 100" />
+            </svg>
+            <div class="gauge-value">
+              <span id="dash-speed" class="big-number">0</span>
+              <span class="unit">km/h</span>
+            </div>
+          </div>
+          <div class="rpm-bar">
+            <span class="label">RPM</span>
+            <div class="bar-track"><div class="bar-fill rpm-fill" id="rpm-bar"></div></div>
+            <span class="bar-value" id="dash-rpm">0</span>
+          </div>
+        </div>
+
+        <!-- Fuel -->
+        <div class="card card-fuel">
+          <div class="card-header">
+            <span class="card-icon">&#9981;</span>
+            <span>Combustível</span>
+          </div>
+          <div class="fuel-gauge">
+            <div class="fuel-level" id="fuel-level"></div>
+          </div>
+          <span class="fuel-text" id="fuel-text">100%</span>
+        </div>
+
+        <!-- Media Mini -->
+        <div class="card card-media-mini" onclick="showPanel('media')">
+          <div class="card-header">
+            <span class="card-icon">&#9835;</span>
+            <span>Mídia</span>
+          </div>
+          <div class="media-mini-info">
+            <div class="mini-track" id="mini-track">Aquarela</div>
+            <div class="mini-artist" id="mini-artist">Toquinho</div>
+          </div>
+          <div class="media-mini-controls">
+            <button class="ctrl-btn small" onclick="event.stopPropagation(); mediaAction('prev')">&#9198;</button>
+            <button class="ctrl-btn small play-btn" id="mini-play" onclick="event.stopPropagation(); mediaAction('toggle')">&#9654;</button>
+            <button class="ctrl-btn small" onclick="event.stopPropagation(); mediaAction('next')">&#9197;</button>
+          </div>
+        </div>
+
+        <!-- HVAC Mini -->
+        <div class="card card-hvac-mini" onclick="showPanel('hvac')">
+          <div class="card-header">
+            <span class="card-icon">&#10052;</span>
+            <span>Clima</span>
+          </div>
+          <div class="hvac-mini-temp">
+            <span id="mini-temp" class="big-number">22.0</span>
+            <span class="unit">°C</span>
+          </div>
+          <div class="hvac-mini-status">
+            <span class="tag tag-active" id="mini-ac">A/C ON</span>
+            <span class="tag" id="mini-fan">Fan 2/5</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Media Panel -->
+    <section id="panel-media" class="panel">
+      <div class="media-player">
+        <div class="album-art" id="album-art">
+          <div class="vinyl" id="vinyl">
+            <div class="vinyl-label"></div>
+          </div>
+        </div>
+        <div class="media-info">
+          <h2 class="track-title" id="track-title">Aquarela</h2>
+          <p class="track-artist" id="track-artist">Toquinho</p>
+          <p class="track-album" id="track-album">Grandes Sucessos</p>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-time">
+            <span id="time-current">0:00</span>
+            <span id="time-total">3:54</span>
+          </div>
+        </div>
+        <div class="media-controls">
+          <button class="ctrl-btn" onclick="mediaAction('prev')">&#9198;</button>
+          <button class="ctrl-btn play-btn-lg" id="play-btn" onclick="mediaAction('toggle')">&#9654;</button>
+          <button class="ctrl-btn" onclick="mediaAction('next')">&#9197;</button>
+        </div>
+        <div class="volume-control">
+          <span class="vol-icon" onclick="mediaAction('mute')" id="vol-icon">&#128266;</span>
+          <input type="range" class="volume-slider" id="volume-slider" min="0" max="30" value="10"
+                 oninput="setVolume(this.value)">
+          <span class="vol-value" id="vol-value">10</span>
+        </div>
+        <div class="playlist-info">
+          Faixa <span id="track-num">1</span> / <span id="track-total">8</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- HVAC Panel -->
+    <section id="panel-hvac" class="panel">
+      <div class="hvac-layout">
+        <div class="hvac-main">
+          <div class="temp-display">
+            <button class="temp-btn" onclick="hvacAction('temp-down')">−</button>
+            <div class="temp-value-container">
+              <span class="temp-big" id="hvac-temp">22.0</span>
+              <span class="temp-unit">°C</span>
+            </div>
+            <button class="temp-btn" onclick="hvacAction('temp-up')">+</button>
+          </div>
+          <div class="temp-current">
+            Atual: <span id="hvac-current">25.0</span>°C
+          </div>
+          <div class="hvac-ring" id="hvac-ring">
+            <svg viewBox="0 0 200 200">
+              <circle class="ring-bg" cx="100" cy="100" r="85"/>
+              <circle class="ring-fill" id="temp-ring" cx="100" cy="100" r="85"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="hvac-controls-grid">
+          <div class="hvac-card">
+            <span class="hvac-label">Ventilador</span>
+            <div class="fan-control">
+              <button class="fan-btn" onclick="hvacAction('fan-down')">−</button>
+              <div class="fan-dots" id="fan-dots">
+                <span class="dot active"></span>
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <button class="fan-btn" onclick="hvacAction('fan-up')">+</button>
+            </div>
+            <span class="fan-level" id="fan-level">2 / 5</span>
+          </div>
+
+          <div class="hvac-card">
+            <span class="hvac-label">Modo</span>
+            <div class="hvac-toggles">
+              <button class="toggle-btn active" id="btn-ac" onclick="hvacAction('toggle-ac')">
+                &#10052; A/C
+              </button>
+              <button class="toggle-btn active" id="btn-power" onclick="hvacAction('toggle-power')">
+                &#9889; Power
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vehicle Panel -->
+    <section id="panel-vehicle" class="panel">
+      <div class="vehicle-layout">
+        <div class="vehicle-gauges">
+          <div class="v-gauge">
+            <svg class="circle-gauge" viewBox="0 0 120 120">
+              <circle class="cg-bg" cx="60" cy="60" r="50"/>
+              <circle class="cg-fill speed-g" id="v-speed-gauge" cx="60" cy="60" r="50"/>
+            </svg>
+            <div class="cg-text">
+              <span class="cg-val" id="v-speed">0</span>
+              <span class="cg-unit">km/h</span>
+            </div>
+          </div>
+          <div class="v-gauge">
+            <svg class="circle-gauge" viewBox="0 0 120 120">
+              <circle class="cg-bg" cx="60" cy="60" r="50"/>
+              <circle class="cg-fill rpm-g" id="v-rpm-gauge" cx="60" cy="60" r="50"/>
+            </svg>
+            <div class="cg-text">
+              <span class="cg-val" id="v-rpm">0</span>
+              <span class="cg-unit">RPM</span>
+            </div>
+          </div>
+          <div class="v-gauge">
+            <svg class="circle-gauge" viewBox="0 0 120 120">
+              <circle class="cg-bg" cx="60" cy="60" r="50"/>
+              <circle class="cg-fill fuel-g" id="v-fuel-gauge" cx="60" cy="60" r="50"/>
+            </svg>
+            <div class="cg-text">
+              <span class="cg-val" id="v-fuel">100</span>
+              <span class="cg-unit">%</span>
+            </div>
+          </div>
+          <div class="v-gauge">
+            <svg class="circle-gauge" viewBox="0 0 120 120">
+              <circle class="cg-bg" cx="60" cy="60" r="50"/>
+              <circle class="cg-fill temp-g" id="v-temp-gauge" cx="60" cy="60" r="50"/>
+            </svg>
+            <div class="cg-text">
+              <span class="cg-val" id="v-engine-temp">90</span>
+              <span class="cg-unit">°C</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="vehicle-info-grid">
+          <div class="info-card">
+            <span class="info-icon">&#128694;</span>
+            <span class="info-label">Portas</span>
+            <span class="info-value" id="v-doors">Todas fechadas</span>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">&#9888;</span>
+            <span class="info-label">Freio de Mão</span>
+            <span class="info-value" id="v-brake">Desativado</span>
+          </div>
+          <div class="info-card">
+            <span class="info-icon">&#128161;</span>
+            <span class="info-label">Faróis</span>
+            <span class="info-value" id="v-lights">Apagados</span>
+          </div>
+        </div>
+
+        <div class="vehicle-alerts" id="vehicle-alerts"></div>
+
+        <button class="refresh-btn" onclick="refreshVehicle()">
+          &#8635; Atualizar Dados
+        </button>
+      </div>
+    </section>
+
+    <!-- Connectivity Panel -->
+    <section id="panel-connectivity" class="panel">
+      <div class="conn-layout">
+        <div class="conn-section">
+          <div class="conn-header">
+            <span class="conn-icon bt">&#9679;</span>
+            <h3>Bluetooth</h3>
+            <span class="conn-status" id="bt-status">Desconectado</span>
+          </div>
+          <div class="conn-device" id="bt-device">
+            <span class="device-name">Nenhum dispositivo</span>
+          </div>
+          <div class="conn-actions">
+            <button class="action-btn" onclick="connAction('bt-scan')">Escanear</button>
+            <button class="action-btn" onclick="connAction('bt-pair')">Parear</button>
+            <button class="action-btn danger" onclick="connAction('bt-disconnect')">Desconectar</button>
+          </div>
+          <div class="device-list" id="bt-devices"></div>
+        </div>
+
+        <div class="conn-section">
+          <div class="conn-header">
+            <span class="conn-icon wifi">&#9679;</span>
+            <h3>Wi-Fi</h3>
+            <span class="conn-status" id="wifi-status">Desconectado</span>
+          </div>
+          <div class="conn-device" id="wifi-device">
+            <span class="device-name">Nenhuma rede</span>
+          </div>
+          <div class="conn-actions">
+            <button class="action-btn" onclick="connAction('wifi-scan')">Escanear</button>
+            <button class="action-btn" onclick="connAction('wifi-connect')">Conectar</button>
+            <button class="action-btn danger" onclick="connAction('wifi-disconnect')">Desconectar</button>
+          </div>
+          <div class="device-list" id="wifi-networks"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
